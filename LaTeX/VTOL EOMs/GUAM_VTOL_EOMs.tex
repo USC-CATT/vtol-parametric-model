@@ -1,0 +1,155 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ...
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{mathtools}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\renewcommand{\vec}{\mathbf}
+
+\title{GUAM VTOL EOMs}
+\author{Z. R. Wu Hankinson}
+
+%\date{}                                           % Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+
+\section{Equations of Motion}
+\begin{equation}
+	X^\top = \begin{bmatrix}
+	    \left( \vec{p}_{B/E}^E \right)^\top &
+		\vec{\Phi}^\top &
+        \left( \vec{v}_{B/E}^B \right)^\top &
+        \left( \vec{\omega}_{B/E}^B \right)^\top
+	\end{bmatrix}
+\end{equation}
+
+\begin{align}
+	\dot{\vec{p}}_{B/E}^E &= C_{B/E}  \vec{v}_{B/E}^B \\
+    \dot{\vec{\Phi}} &= H(\Phi) \vec{\omega}_{B/E}^B \\
+    \dot{\vec{v}}_{B/E}^B &= \frac{1}{m_B}\boldsymbol{F}^B + C_{B/E}\vec{g}^E- \vec{\omega}_{B/E}^B \times \vec{v}_{B/E}^B \\
+    \dot{\vec{\omega}}_{B/E}^B &= J_B^{-1} \left(\boldsymbol{M}^B - \vec{\omega}_{B/E}^B \times J \vec{\omega}_{B/E}^B\right)
+\end{align}
+\section{Forces and Moments}
+We have
+$$
+\boldsymbol{F}^B = \vec{F}_{motor}^B + \vec{F}_{aero}^B
+$$
+$$
+\boldsymbol{M}^B = \vec{M}_{motor}^B + \vec{M}_{aero}^B
+$$
+
+\section{Aerodynamics}
+\begin{equation}
+	\vec{F}_{aero}^B = \frac{1}{2}\rho \cdot \left|\vec{v}\right|^2 \cdot S \cdot
+	\begin{bmatrix}
+		C_L(\vec{v}, \vec{\Phi}, \vec{e}, \vec{a}, \vec{r}) \\
+		C_D(\vec{v}, \vec{\Phi}, \vec{e}, \vec{a}, \vec{r}) \\
+		C_Q(\vec{v}, \vec{\Phi}, \vec{e}, \vec{a}, \vec{r})
+\end{bmatrix}
+\end{equation}
+
+
+\begin{equation}
+	\vec{M}_{aero}^B = \frac{1}{2}\rho \cdot \left|\vec{v}\right|^2 \cdot S \cdot c \cdot
+	\begin{bmatrix}
+		C_m(\vec{v}, \vec{\Phi}, \vec{e}, \vec{a}, \vec{r}) \\
+		C_{LA}(\vec{v}, \vec{\Phi}, \vec{e}, \vec{a}, \vec{r}) \\
+		C_{NA}(\vec{v}, \vec{\Phi}, \vec{e}, \vec{a}, \vec{r})
+\end{bmatrix}
+\end{equation}
+%\section{}
+%\subsection{}
+
+\section{Motors}
+\begin{equation}
+	\vec{F}_{motor} =
+	\begin{bmatrix}
+		T_{push} \\
+		0 \\
+		-\sum_i T_{lift, i}
+	\end{bmatrix}
+\end{equation}
+
+$$
+\text{w/ Thrust} \coloneqq T_i = K_T\omega_i^2
+$$
+\begin{equation}
+	\vec{M}_{motor} =
+	\begin{bmatrix}
+		\sum_i T_i dy_i + \tau_{push} \\
+		\sum_i T_i dx_i - T_{push}dz_{push} \\
+		\sum_i \tau_i
+	\end{bmatrix}
+\end{equation}
+
+$$
+\text{w/ Torque} \coloneqq \tau_i = b\omega_i^2 + I_m \dot{\omega}_i
+$$
+
+\begin{equation}
+	\vec{F}_{si}^W = L_{si}\vec{n}_{si}^B -
+	\begin{bmatrix}
+		D_{si} \\
+		0 \\
+		0
+	\end{bmatrix}
+\end{equation}
+$$
+\vec{F}_{si}^B = C_{B/W} \vec{F}_{si}^W
+$$
+$$
+\vec{F}_{aero}^B = \sum_i \vec{F}_{si}^B
+$$
+$$
+\vec{M}_{aero}^B = \sum_i \vec{M}_{si}^B
+$$
+
+$$
+\vec{M}_{si}^B = M_{si}
+\begin{bmatrix}
+    0 &0 &0 \\
+    0 &0 &-1 \\
+    0 &1 &0 \\
+\end{bmatrix}
+\vec{n}_{si}^B
++
+\vec{x}_{si/cm}^B \times \vec{F}_{si}^B
+$$
+For each aero surface $si$ with normal vector $\vec{n}_{si}^B$ and
+center of lift relative to center of mass $\vec{x}_{si/cm}$
+
+$$
+L_{si} = \frac{1}{2}\rho \cdot \left|\vec{v}\right|^2 \cdot S_{si} \cdot C_L(\alpha_{si}, \delta u_i)
+$$
+$$
+D_{si} = \frac{1}{2}\rho \cdot \left|\vec{v}\right|^2 \cdot S_{si} \cdot C_D(\alpha_{si}, \delta u_i)
+$$
+$$
+M_{si} = \frac{1}{2}\rho \cdot \left|\vec{v}\right|^2 \cdot S_{si} \cdot c \cdot C_M(\alpha_{si}, \delta u_i)
+$$
+
+$$
+\alpha_{si} = -asin\left(\frac{\vec{v}_{B/W}^B\cdot \vec{n}_{si}^B}{\left|\vec{v}_{B/W}^B\right|}\right)
+$$
+$$
+C_{L,si}(\alpha, \delta u) = C_{L0,si} + C_{L\alpha,si}\alpha +
+\left(\frac{\partial C_{L,si}}{\partial \delta u_i}\right)\delta u
+\left(\frac{S_{u,si}}{S_{si}}\right)
+$$
+$$
+C_{D,si}(\alpha, \delta u) = C_{D0,si} + C_{D\alpha,si}\left(\alpha - \alpha_{0,si}\right)^2 +
+\left(\frac{\partial C_{D,si}}{\partial \delta u_i}\right)\delta u^2
+\left(\frac{S_{u,si}}{S_{si}}\right)
+$$
+$$
+C_{M,si}(\alpha, \delta u) = C_{M0,si} + C_{M\alpha,si}\alpha +
+\left(\frac{\partial C_{M,si}}{\partial \delta u_i}\right)\delta u
+\left(\frac{S_{u,si}}{S_{si}}\right)
+$$
+\end{document}
