@@ -241,7 +241,91 @@ xdot = Matrix.vstack(
     domg_bre_b
 )
 
+#Trim condition Placeholders
+trim_values = {
+    phi:0,
+    tht:0,
+    psi:0,
+    u:0,
+    v:0,
+    w:0,
+    p:0,
+    q:0,
+    r:0,
+    }
+#Nominal values for other constants
+nominal_values = {
 
+    # Environment
+    g: 9.81,
+    rho: 1.225,
+
+    # Mass
+    m: 10.0,
+
+    # Inertia
+    Ixx: 0,
+    Iyy: 0,
+    Izz: 0,
+    Ixy: 0,
+    Iyz: 0,
+    Ixz: 0,
+
+    # Wing geometry
+    b1: 0,
+    c1: 0,
+    i1: 0,
+
+    # Wing location
+    xs1: 0,
+    ys1: 0,
+    zs1: 0,
+
+    # Aero coefficients
+    Cl01: 0,
+    dCldu1: 0,
+    cu1: 0,
+
+    Cd01: 0,
+    Cda1: 0,
+    a01: 0,
+    e1: 0,
+    dCddu1: 0,
+
+    Cm01: 0,
+    Cma1: 0,
+    dCmdu1: 0,
+
+    # Wind
+    wn: 0,
+    we: 0,
+    wd: 0,
+
+    # Controls
+    ail1: 0,
+    ail2: 0,
+    elev: 0,
+    rudd: 0,
+
+    # Cruise prop
+    Thc: 0,
+    tauc: 0,
+    spinc: 0,
+
+    xc: 0,
+    yc: 0,
+    zc: 0,
+    
+    #Spin Coefficient
+    spinp[0]: 1,
+    spinp[1]: -1,
+    spinp[2]: 1,
+    spinp[3]: -1,
+    spinp[4]: 1,
+    spinp[5]: -1,
+    spinp[6]: 1,
+    spinp[7]: -1,
+}
 # Linearization
 
 A = xdot.jacobian(state)
