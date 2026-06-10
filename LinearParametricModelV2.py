@@ -1,4 +1,7 @@
 from sympy import *
+import pandas as pandas
+
+
 
 # Shortcut functions for sin and cosine
 x, y, z = symbols('x y z')
@@ -119,6 +122,51 @@ M1 = Rational(1, 2)*rho*S1*c1*v_rel.dot(v_rel)*CM1(alpha_s1, ail1)
 M_a1_b = Matrix([[0], [M1], [0]])
 M_f1_b = xvecs1.cross(F_a1_b)
 
+# wing 2 aerodynamics
+
+
+i2 = symbols("i_2")
+xs2, ys2, zs2 = symbols("x_{s2} y_{s2} z_{s2}")
+xvecs2 = Matrix([[xs2], [ys2], [zs2]])
+
+b2, c2 = symbols("b_2 c_2")
+S2 = b2*c2
+AR2 = b2/c2
+
+Cl02, dCldu2, cu2 = symbols("C_{L02} \\frac{\\partial{}C_{L2}}{\\partial\\delta{}u} c_{u2}")
+Cla2 = 2*pi*AR2/(2 + AR2)
+
+CL2 = Lambda((x, y), Cl02 + Cla2*x + dCldu2*y*cu2/c2)
+alpha_s2 = alpha + i2
+
+L2 = Rational(1, 2)*rho*v_rel.dot(v_rel)*S2*CL2(alpha_s2, ail2)
+
+Cd02, Cda2, a02, e2, dCddu2 = symbols(
+    "C_{D02} C_{d\\alpha{}2} \\alpha_{02} e_2 \\frac{\\partial{}C_{D2}}{\\partial\\delta{}u_2}"
+)
+
+CD2 = Lambda(
+    (x, y),
+    Cd02 + Cda2*(x - a02)**2 + CL2(x, y)**2/(pi*e2*AR2) + dCddu2*y*cu2/c2
+)
+
+D2 = Rational(1, 2)*rho*v_rel.dot(v_rel)*S2*CD2(alpha_s2, ail2)
+
+F_a2_w = Matrix([[-D2], [0], [-L2]])
+F_a2_b = C_wfb.T * F_a2_w
+
+Cm02, Cma2, dCmdu2 = symbols(
+    "C_{M02} C_{M\\alpha{}2} \\frac{\\partial{}C_M2}{\\partial\\delta{}u_2}"
+)
+
+CM2 = Lambda((x, y), Cm02 + Cma2*x + dCmdu2*y*cu2/c2)
+
+M2 = Rational(1, 2)*rho*S2*c2*v_rel.dot(v_rel)*CM2(alpha_s2, ail2)
+
+M_a2_b = Matrix([[0], [M2], [0]])
+M_f2_b = xvecs2.cross(F_a2_b)
+
+
 
 # Force Function
 
@@ -127,15 +175,15 @@ def prop_force_moment(Th, tau, spin, xvec, nvec):
     Th   = thrust magnitude
     tau  = reaction torque magnitude
     spin = +1 or -1 spin direction
-    xvec = prop position vector from CG, body frame
-    nvec = thrust direction unit vector, body frame
+    xvec = prop position vector from CG
+    nvec = thrust direction unit vector
     """
     F = Th * nvec
     M = xvec.cross(F) + tau * spin * nvec
     return F, M
 
 
-# Define each propeller force
+# Propeller forces
 
 Thp = symbols('T_p1:9')          # T_p1 ... T_p8
 taup = symbols('tau_p1:9')       # tau_p1 ... tau_p8
@@ -176,7 +224,7 @@ xc, yc, zc = symbols('x_c y_c z_c')
 
 xvecc = Matrix([[xc], [yc], [zc]])
 
-# Assuming forward body x direction
+
 n_cruise = Matrix([[1], [0], [0]])
 
 F_cruise_b, M_cruise_b = prop_force_moment(
@@ -190,9 +238,9 @@ F_cruise_b, M_cruise_b = prop_force_moment(
 
 # Total forces and moments
 
-F_ext_b = F_a1_b + F_lift_props_b + F_cruise_b
+F_ext_b = F_a1_b + F_a2_b + F_lift_props_b + F_cruise_b
 
-M_ext_b = M_a1_b + M_f1_b + M_lift_props_b + M_cruise_b
+M_ext_b = M_a1_b + M_f1_b + M_a2_b + M_f2_b + M_lift_props_b + M_cruise_b
 
 
 # Equations of motion
@@ -241,95 +289,134 @@ xdot = Matrix.vstack(
     domg_bre_b
 )
 
-#Trim condition Placeholders
-trim_values = {
-    phi:0,
-    tht:0,
-    psi:0,
-    u:0,
-    v:0,
-    w:0,
-    p:0,
-    q:0,
-    r:0,
-    }
-#Nominal values for other constants
-nominal_values = {
 
-    # Environment
-    g: 9.81,
-    rho: 1.225,
+# Read CSV files
+vehicle_df = pandas.read_csv("/Users/patrickcampbell/Downloads/vehicle_parameters.csv")
+trim_df = pandas.read_csv("/Users/patrickcampbell/Downloads/hover_trim.csv")
 
-    # Mass
-    m: 10.0,
+# Combine vehicle parameters and trim values
+all_params_df = pandas.concat([vehicle_df, trim_df], ignore_index=True)
 
-    # Inertia
-    Ixx: 0,
-    Iyy: 0,
-    Izz: 0,
-    Ixy: 0,
-    Iyz: 0,
-    Ixz: 0,
+# Map CSV parameter names to SymPy symbols
+symbol_map = {
+    "g": g,
+    "rho": rho,
+    "m": m,
 
-    # Wing geometry
-    b1: 0,
-    c1: 0,
-    i1: 0,
+    "Ixx": Ixx,
+    "Iyy": Iyy,
+    "Izz": Izz,
+    "Ixy": Ixy,
+    "Iyz": Iyz,
+    "Ixz": Ixz,
 
-    # Wing location
-    xs1: 0,
-    ys1: 0,
-    zs1: 0,
+    "b1": b1,
+    "c1": c1,
+    "i1": i1,
 
-    # Aero coefficients
-    Cl01: 0,
-    dCldu1: 0,
-    cu1: 0,
+    "xs1": xs1,
+    "ys1": ys1,
+    "zs1": zs1,
 
-    Cd01: 0,
-    Cda1: 0,
-    a01: 0,
-    e1: 0,
-    dCddu1: 0,
+    "Cl01": Cl01,
+    "dCldu1": dCldu1,
+    "cu1": cu1,
 
-    Cm01: 0,
-    Cma1: 0,
-    dCmdu1: 0,
+    "Cd01": Cd01,
+    "Cda1": Cda1,
+    "a01": a01,
+    "e1": e1,
+    "dCddu1": dCddu1,
 
-    # Wind
-    wn: 0,
-    we: 0,
-    wd: 0,
+    "Cm01": Cm01,
+    "Cma1": Cma1,
+    "dCmdu1": dCmdu1,
 
-    # Controls
-    ail1: 0,
-    ail2: 0,
-    elev: 0,
-    rudd: 0,
+    "wn": wn,
+    "we": we,
+    "wd": wd,
 
-    # Cruise prop
-    Thc: 0,
-    tauc: 0,
-    spinc: 0,
+    "phi": phi,
+    "tht": tht,
+    "psi": psi,
 
-    xc: 0,
-    yc: 0,
-    zc: 0,
+    "u": u,
+    "v": v,
+    "w": w,
+
+    "p": p,
+    "q": q,
+    "r": r,
+
+    "ail1": ail1,
+    "ail2": ail2,
+    "elev": elev,
+    "rudd": rudd,
+
+    "T_c": Thc,
+    "tau_c": tauc,
+    "s_c": spinc,
+
+    "x_c": xc,
+    "y_c": yc,
+    "z_c": zc,
     
-    #Spin Coefficient
-    spinp[0]: 1,
-    spinp[1]: -1,
-    spinp[2]: 1,
-    spinp[3]: -1,
-    spinp[4]: 1,
-    spinp[5]: -1,
-    spinp[6]: 1,
-    spinp[7]: -1,
+    "b2": b2,
+    "c2": c2,
+    "i2": i2,
+    "xs2": xs2,
+    "ys2": ys2,
+    "zs2": zs2,
+    "Cl02": Cl02,
+    "dCldu2": dCldu2,
+    "cu2": cu2,
+    "Cd02": Cd02,
+    "Cda2": Cda2,
+    "a02": a02,
+    "e2": e2,
+    "dCddu2": dCddu2,
+    "Cm02": Cm02,
+    "Cma2": Cma2,
+    "dCmdu2": dCmdu2,
 }
-# Linearization
 
+
+for i in range(8):
+    symbol_map[f"T_p{i+1}"] = Thp[i]
+    symbol_map[f"tau_p{i+1}"] = taup[i]
+    symbol_map[f"s_p{i+1}"] = spinp[i]
+
+    symbol_map[f"x_p{i+1}"] = xp[i]
+    symbol_map[f"y_p{i+1}"] = yp[i]
+    symbol_map[f"z_p{i+1}"] = zp[i]
+
+# Build substitution dictionary
+subs_values = {}
+
+for _, row in all_params_df.iterrows():
+    name = row["parameter"].strip()
+    value = float(row["value"])
+
+    if name in symbol_map:
+        subs_values[symbol_map[name]] = value
+    else:
+        print(f"Warning: {name} from CSV is not in symbol_map")
+
+# Linearization
 A = xdot.jacobian(state)
 B = xdot.jacobian(inputs)
+
+A_num = A.subs(subs_values)
+B_num = B.subs(subs_values)
+print("A matrix shape:", A.shape)
+print("B matrix shape:", B.shape)
+
+print("A_num =")
+print(A_num)
+
+print("B_num =")
+print(B_num)
+
 
 print("State vector shape:", state.shape)
 print("Input vector shape:", inputs.shape)
