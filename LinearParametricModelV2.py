@@ -4,32 +4,32 @@ import pandas as pandas
 
 
 # Shortcut functions for sin and cosine
-x, y, z = symbols('x y z')
+x, y, z = symbols('x y z', real = True)
 c = Lambda(x, cos(x))
 s = Lambda(x, sin(x))
 
 #Variable Definitions
 
 # Position Variable
-pn, pe, pd = symbols("p_n p_e p_d")
+pn, pe, pd = symbols("p_n p_e p_d", real = True)
 pos = Matrix([[pn], [pe], [pd]])
 print("pos =")
 print(pos)
 
 # Orientation
-phi, tht, psi = symbols("phi theta psi")
+phi, tht, psi = symbols("phi theta psi", real = True)
 PHI = Matrix([[phi], [tht], [psi]])
 print("PHI =")
 print(PHI)
 
 # Velocity
-u, v, w = symbols("u v w")
+u, v, w = symbols("u v w", real = True)
 vel = Matrix([[u], [v], [w]])
 print("vel =")
 print(vel)
 
 # Angular Velocity
-p, q, r = symbols("p q r")
+p, q, r = symbols("p q r", real = True)
 omg = Matrix([[p], [q], [r]])
 print("omg =")
 print(omg)
@@ -59,7 +59,7 @@ dPHI_brn_n = H_phi * omg
 m, g = symbols("m g")
 gvec = Matrix([[0], [0], [g]])
 
-wn, we, wd = symbols("w_n w_e w_d")
+wn, we, wd = symbols("w_n w_e w_d", real=True)
 v_wre_e = Matrix([[wn], [we], [wd]])
 
 v_rel = vel - C_bfn * v_wre_e
@@ -79,17 +79,17 @@ rho = symbols("\\rho")
 
 # wing 1 aerodynamics
 
-ail1, ail2, elev, rudd = symbols("\\delta{}a_1 \\delta{}a_2 \\delta{}e \\delta{}r")
+ail1, ail2, elev, rudd = symbols("\\delta{}a_1 \\delta{}a_2 \\delta{}e \\delta{}r", real=True)
 
 i1 = symbols("i_1")
-xs1, ys1, zs1 = symbols("x_{s1} y_{s1} z_{s1}")
+xs1, ys1, zs1 = symbols("x_{s1} y_{s1} z_{s1}", real=True)
 xvecs1 = Matrix([[xs1], [ys1], [zs1]])
 
 b1, c1 = symbols("b_1 c_1")
 S1 = b1*c1
 AR1 = b1/c1
 
-Cl01, dCldu1, cu1 = symbols("C_{L01} \\frac{\\partial{}C_{L1}}{\\partial\\delta{}u} c_{u1}")
+Cl01, dCldu1, cu1 = symbols("C_{L01} \\frac{\\partial{}C_{L1}}{\\partial\\delta{}u} c_{u1}", real=True)
 Cla1 = 2*pi*AR1/(2 + AR1)
 
 CL1 = Lambda((x, y), Cl01 + Cla1*x + dCldu1*y*cu1/c1)
@@ -98,7 +98,7 @@ alpha_s1 = alpha + i1
 L1 = Rational(1, 2)*rho*v_rel.dot(v_rel)*S1*CL1(alpha_s1, ail1)
 
 Cd01, Cda1, a01, e1, dCddu1 = symbols(
-    "C_{D01} C_{d\\alpha{}1} \\alpha_{01} e_1 \\frac{\\partial{}C_{D1}}{\\partial\\delta{}u_1}"
+    "C_{D01} C_{d\\alpha{}1} \\alpha_{01} e_1 \\frac{\\partial{}C_{D1}}{\\partial\\delta{}u_1}", real=True
 )
 
 CD1 = Lambda(
@@ -112,7 +112,7 @@ F_a1_w = Matrix([[-D1], [0], [-L1]])
 F_a1_b = C_wfb.T * F_a1_w
 
 Cm01, Cma1, dCmdu1 = symbols(
-    "C_{M01} C_{M\\alpha{}1} \\frac{\\partial{}C_M1}{\\partial\\delta{}u_1}"
+    "C_{M01} C_{M\\alpha{}1} \\frac{\\partial{}C_M1}{\\partial\\delta{}u_1}", real=True
 )
 
 CM1 = Lambda((x, y), Cm01 + Cma1*x + dCmdu1*y*cu1/c1)
@@ -126,14 +126,14 @@ M_f1_b = xvecs1.cross(F_a1_b)
 
 
 i2 = symbols("i_2")
-xs2, ys2, zs2 = symbols("x_{s2} y_{s2} z_{s2}")
+xs2, ys2, zs2 = symbols("x_{s2} y_{s2} z_{s2}", real=True)
 xvecs2 = Matrix([[xs2], [ys2], [zs2]])
 
-b2, c2 = symbols("b_2 c_2")
+b2, c2 = symbols("b_2 c_2", real=True)
 S2 = b2*c2
 AR2 = b2/c2
 
-Cl02, dCldu2, cu2 = symbols("C_{L02} \\frac{\\partial{}C_{L2}}{\\partial\\delta{}u} c_{u2}")
+Cl02, dCldu2, cu2 = symbols("C_{L02} \\frac{\\partial{}C_{L2}}{\\partial\\delta{}u} c_{u2}", real=True)
 Cla2 = 2*pi*AR2/(2 + AR2)
 
 CL2 = Lambda((x, y), Cl02 + Cla2*x + dCldu2*y*cu2/c2)
@@ -142,7 +142,7 @@ alpha_s2 = alpha + i2
 L2 = Rational(1, 2)*rho*v_rel.dot(v_rel)*S2*CL2(alpha_s2, ail2)
 
 Cd02, Cda2, a02, e2, dCddu2 = symbols(
-    "C_{D02} C_{d\\alpha{}2} \\alpha_{02} e_2 \\frac{\\partial{}C_{D2}}{\\partial\\delta{}u_2}"
+    "C_{D02} C_{d\\alpha{}2} \\alpha_{02} e_2 \\frac{\\partial{}C_{D2}}{\\partial\\delta{}u_2}", real=True
 )
 
 CD2 = Lambda(
@@ -156,7 +156,7 @@ F_a2_w = Matrix([[-D2], [0], [-L2]])
 F_a2_b = C_wfb.T * F_a2_w
 
 Cm02, Cma2, dCmdu2 = symbols(
-    "C_{M02} C_{M\\alpha{}2} \\frac{\\partial{}C_M2}{\\partial\\delta{}u_2}"
+    "C_{M02} C_{M\\alpha{}2} \\frac{\\partial{}C_M2}{\\partial\\delta{}u_2}", real=True
 )
 
 CM2 = Lambda((x, y), Cm02 + Cma2*x + dCmdu2*y*cu2/c2)
@@ -219,8 +219,8 @@ for i in range(8):
 
 # Forward propeller 
 
-Thc, tauc, spinc = symbols('T_c tau_c s_c')
-xc, yc, zc = symbols('x_c y_c z_c')
+Thc, tauc, spinc = symbols('T_c tau_c s_c', real=True)
+xc, yc, zc = symbols('x_c y_c z_c', real=True)
 
 xvecc = Matrix([[xc], [yc], [zc]])
 
@@ -247,7 +247,7 @@ M_ext_b = M_a1_b + M_f1_b + M_a2_b + M_f2_b + M_lift_props_b + M_cruise_b
 
 dvel_bre_b = (1/m)*F_ext_b + C_bfn*gvec - omg.cross(vel)
 
-Ixx, Iyy, Izz, Ixy, Iyz, Ixz = symbols("I_{xx} I_{yy} I_{zz} I_{xy} I_{yz} I_{xz}")
+Ixx, Iyy, Izz, Ixy, Iyz, Ixz = symbols("I_{xx} I_{yy} I_{zz} I_{xy} I_{yz} I_{xz}", real=True)
 
 J = Matrix([
     [Ixx, Ixy, Ixz],
@@ -291,8 +291,8 @@ xdot = Matrix.vstack(
 
 
 # Read CSV files
-vehicle_df = pandas.read_csv("/Users/patrickcampbell/Downloads/vehicle_parameters.csv")
-trim_df = pandas.read_csv("/Users/patrickcampbell/Downloads/hover_trim.csv")
+vehicle_df = pandas.read_csv("/Users/patrickcampbell/Documents/vehicle_parameters.csv", skiprows=1)
+trim_df = pandas.read_csv("/Users/patrickcampbell/Documents/hover_trim 2.csv", skiprows=1)
 
 # Combine vehicle parameters and trim values
 all_params_df = pandas.concat([vehicle_df, trim_df], ignore_index=True)
@@ -406,8 +406,8 @@ for _, row in all_params_df.iterrows():
 A = xdot.jacobian(state)
 B = xdot.jacobian(inputs)
 
-A_num = A.subs(subs_values)
-B_num = B.subs(subs_values)
+A_num = A.subs(subs_values).evalf()
+B_num = B.subs(subs_values).evalf()
 print("A matrix shape:", A.shape)
 print("B matrix shape:", B.shape)
 
